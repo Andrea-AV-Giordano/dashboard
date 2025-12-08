@@ -1,0 +1,15 @@
+.card {
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.4);
+}
+
+.card-header {
+   background-color: #ff4d4d;
+}
+
+.row {
+    --bs-gutter-x: 0px;
+    --bs-gutter-y: 0px;
+
+}
+
+
