@@ -15,7 +15,6 @@ PREZZO_MAIS = np.random.uniform(200,280,1).round(0)
 
 
 
-
 DATA = pd.date_range(start='1/1/2025', periods=12, freq='ME')
 
 
@@ -30,14 +29,18 @@ spese = pd.DataFrame({
     'manodopera': np.random.uniform(17000,20000, 12).round(1),
     'pesticidi': np.random.uniform(2000,2200, 12).round(1),
     'fertilizzanti': np.random.uniform(3000,3200, 12).round(1)
-        
+
 }, index=DATA)
 
+temperatura =  (np.array([10, 14, 17, 19, 24, 28, 32, 33, 27, 23, 17, 10]) + variazione(-3,3)).round(1)
+precipitazioni =  (np.array([55, 60, 70, 45, 35, 25, 15, 20, 40, 55, 60, 65]) + variazione(-3,3)).round(1)
+soglia = 35  # percentuale sotto la quale consideri "stagione secca"
+
 clima = pd.DataFrame({
- 'temperatura': (32 + np.cumsum(variazione(-3,3)).round(1)),
- 'umidita' : np.random.uniform(50,120, 12).round(0),
- 'precipitazioni': np.random.uniform(12,25, 12).round(1),
-},
+ 'temperatura':  temperatura,
+ 'precipitazioni': precipitazioni,
+ 'umidita' : np.add((precipitazioni)*0.6,(temperatura)*0.4),
+ },
     index=DATA
                      )
 
@@ -71,6 +74,14 @@ sommaColture = pd.DataFrame({
 df = spese.join(colture)
 
 
+
+
+clima['umidita_normale'] = clima['umidita'].where(clima["umidita"] >= soglia )
+clima['umidita_secca'] = clima['umidita'].where(clima["umidita"] < soglia)
+
+
+
+
 df['valoreGrano'] = np.multiply(colture['grano'], PREZZO_GRANO).round(2)
 df['valoreRiso']= np.multiply(colture['riso'], PREZZO_RISO).round(2)
 df['valoreMais']= np.multiply(colture['mais'], PREZZO_MAIS).round(2)
@@ -78,9 +89,9 @@ df['totale'] =  ((df['valoreGrano'] + df['valoreMais'] + df['valoreRiso']) - (df
 
 temp = pd.DataFrame(df.filter(items=['valoreRiso', 'valoreGrano', 'valoreMais']))
 filtro = (pd.DataFrame(temp.join(colture))).reset_index()
-filtro['index']= filtro['index'].dt.strftime('%Y-%m-%d')
+filtro['index']= filtro['index'].dt.strftime('%d-%m-%Y')
 
 df = df.reset_index()
-df['index'] = df['index'].dt.strftime('%Y-%m-%d')
+df['index'] = df['index'].dt.strftime('%d-%m-%Y')
 df_dict = df.to_dict('records')
 

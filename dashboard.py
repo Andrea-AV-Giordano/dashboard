@@ -56,35 +56,67 @@ TAB_PRODUZIONE = dbc.Container([
         ]),
         dbc.Col([ 
                 dbc.Card([
+                    dbc.CardHeader('Quantità totale prodotta'),
                     dcc.Graph(figure=px.pie(sommaColture, names='Coltura', values='Valore')), 
                         ])
                 ]),
     ])
     ])
-    
+
+
+areaumidita = go.Figure()
+
+areaumidita.add_trace(
+    go.Scatter(
+        x=DATA,
+        y=clima['umidita'],
+        fill='tozeroy',
+        name="Stagione umida"
+    ))
+#'''
+areaumidita.add_trace(
+    go.Scatter(
+        x=DATA,
+        y=clima['umidita_secca'],
+        fill='tozeroy',
+        name="Stagione secca"
+    )
+)
+#'''
+ 
+
+areaumidita.update_layout(
+    yaxis_title="Umidità (%)",
+    xaxis_title="Mese",
+)
+
+print(clima['umidita_normale'])
+print(clima['umidita_secca'])
+
 TAB_CLIMA = dbc.Container([
     dbc.Row([
                 dbc.Col([
                 dbc.Card([
-                    dbc.CardHeader("Precipitazioni"),
+                    dbc.CardHeader("Precipitazioni medie mensili"),
                     dbc.CardBody(dcc.Graph(id="precipitazioni", figure=px.bar(clima, y=['precipitazioni'], x=DATA)))
                     ]),
             ]),
                 dbc.Col([
                 dbc.Card([
-                    dbc.CardHeader("Temperatura"),
-                    dbc.CardBody(dcc.Graph(id="temperatura",figure=px.line(clima, y=['temperatura'], x=DATA, range_y=(20, 40), markers=True)))
-                    ])
-            ]),
-                dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader("Umidità"),
-                    dbc.CardBody(dcc.Graph(id="umidità", figure=px.histogram(x=x,y=y)))
+                    dbc.CardHeader("Temperatura media mensile"),
+                    dbc.CardBody(dcc.Graph(id="temperatura",figure=px.line(clima, y=['temperatura'], x=DATA, markers=True)))
                     ])
             ])
-                    
+                                
     ]),
-
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                    dbc.CardHeader("Umidità"),
+                    dbc.CardBody(dcc.Graph(id="umidità", figure=areaumidita))
+                    ])
+            ])
+        ]),     
     dbc.Row([
         dbc.Col([
             dbc.Card([
@@ -98,7 +130,7 @@ TAB_CLIMA = dbc.Container([
             dcc.Graph(
                 figure=go.Figure(go.Indicator(
                 mode = "gauge+number",
-                value =risorse_amb['emissioni'].mean(),
+                value = risorse_amb['emissioni'].mean(),
                 domain = {'x': [0, 1], 'y': [0, 1]},
                 title = {'text': "Emissioni"},
                 gauge={
@@ -120,7 +152,6 @@ TAB_CLIMA = dbc.Container([
         ]),
     ])
 ])
-
 
 
 TAB_ECONOMIA = dbc.Container([
@@ -195,6 +226,7 @@ TAB_ECONOMIA = dbc.Container([
     ])
 ])
 
+
 app.layout = dbc.Container([
     dbc.Tabs(
         id="tabs",
@@ -238,13 +270,13 @@ def aggiorna(selezione):
     valore = None
 
     if selezione == 'mais':
-        coltura='mais'
+        coltura=selezione
         valore='valoreMais'
     elif selezione == 'riso':
-        coltura='riso'
+        coltura=selezione
         valore='valoreRiso'
     elif selezione == 'grano':
-        coltura='grano'
+        coltura=selezione
         valore='valoreGrano'
 
 
@@ -256,7 +288,6 @@ def aggiorna(selezione):
 
     return colonne
  
-print(sommaColture)
 
 @app.callback(
     Output("lineColture", "figure"),
