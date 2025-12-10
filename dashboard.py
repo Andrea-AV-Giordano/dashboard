@@ -73,7 +73,7 @@ areaumidita.add_trace(
         fill='tozeroy',
         name="Stagione umida"
     ))
-#'''
+
 areaumidita.add_trace(
     go.Scatter(
         x=DATA,
@@ -82,7 +82,6 @@ areaumidita.add_trace(
         name="Stagione secca"
     )
 )
-#'''
  
 
 areaumidita.update_layout(
@@ -90,8 +89,6 @@ areaumidita.update_layout(
     xaxis_title="Mese",
 )
 
-print(clima['umidita_normale'])
-print(clima['umidita_secca'])
 
 TAB_CLIMA = dbc.Container([
     dbc.Row([
@@ -154,6 +151,8 @@ TAB_CLIMA = dbc.Container([
 ])
 
 
+
+print(date_formattate)
 TAB_ECONOMIA = dbc.Container([
     dbc.Row([
         dbc.Col([
@@ -196,6 +195,26 @@ TAB_ECONOMIA = dbc.Container([
             ])
         ])
     ]),
+
+    dbc.Row([
+
+        dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader('Guadagno mensile'),
+                    dbc.CardBody([
+                        dcc.Graph(id='waterfallVendite'),
+                        dcc.Slider(
+                            id='slider',
+                            min=1,
+                            max=12,
+                            value=1,
+                            step=1,
+                            marks={k: v for k, v in date_formattate.items()}),
+                        ])
+                    ])
+            ])
+
+        ]),
     dbc.Row([
         dbc.Col([ 
                  dbc.Card([
@@ -224,6 +243,7 @@ TAB_ECONOMIA = dbc.Container([
                         )])
         ])
     ])
+
 ])
 
 
@@ -319,6 +339,39 @@ def aggiorna(selezione):
 
     fig = px.line(risorse_amb, y=y, x=DATA, markers=True)
     return fig 
+
+@app.callback(
+        Output('waterfallVendite','figure'),
+        Input('slider', 'value')
+        )
+def calcolodelta(mese):
+    mese = date_formattate[mese]
+    waterfallDf = temp
+    mesi = list(waterfallDf['index'])    
+
+    idx=mesi.index(mese)
+
+    df_prev = (waterfallDf[waterfallDf['index'] == mesi[idx-1]]).set_index('index')
+    df_curr = (waterfallDf[waterfallDf['index'] == mesi[idx]]).set_index('index')
+    riga_corr = df_curr.loc[mesi[idx]]
+    riga_prev = df_prev.loc[mesi[idx-1]]
+
+    delta = riga_corr - riga_prev
+    delta = delta.to_frame(name="value")
+
+
+
+    waterfall = go.Figure(go.Waterfall(
+    orientation='v',
+    x=delta.index,
+    y=delta['value'],
+    ))
+
+    
+    print(delta)
+
+    return waterfall
+
 
 if __name__ == "__main__":
     app.run()

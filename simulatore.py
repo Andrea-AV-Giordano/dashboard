@@ -6,9 +6,6 @@ def variazione(x,y):
     variazione = np.random.uniform(x,y, 12)
     return variazione
 
-x = np.random.randn(500)
-y = np.random.randn(500)+1
-
 PREZZO_GRANO = np.random.uniform(220,250,1).round(0)
 PREZZO_RISO = np.random.uniform(350,380,1).round(0)
 PREZZO_MAIS = np.random.uniform(200,280,1).round(0)
@@ -34,7 +31,7 @@ spese = pd.DataFrame({
 
 temperatura =  (np.array([10, 14, 17, 19, 24, 28, 32, 33, 27, 23, 17, 10]) + variazione(-3,3)).round(1)
 precipitazioni =  (np.array([55, 60, 70, 45, 35, 25, 15, 20, 40, 55, 60, 65]) + variazione(-3,3)).round(1)
-soglia = 35  # percentuale sotto la quale consideri "stagione secca"
+soglia = 35 
 
 clima = pd.DataFrame({
  'temperatura':  temperatura,
@@ -73,10 +70,9 @@ sommaColture = pd.DataFrame({
 
 df = spese.join(colture)
 
+date_formattate = {i+1: d.strftime("%d-%m-%Y") for i, d in enumerate(DATA)}
 
 
-
-clima['umidita_normale'] = clima['umidita'].where(clima["umidita"] >= soglia )
 clima['umidita_secca'] = clima['umidita'].where(clima["umidita"] < soglia)
 
 
@@ -87,11 +83,15 @@ df['valoreRiso']= np.multiply(colture['riso'], PREZZO_RISO).round(2)
 df['valoreMais']= np.multiply(colture['mais'], PREZZO_MAIS).round(2)
 df['totale'] =  ((df['valoreGrano'] + df['valoreMais'] + df['valoreRiso']) - (df['fertilizzanti'] + df['pesticidi'] + df['manodopera'])).round(2) 
 
-temp = pd.DataFrame(df.filter(items=['valoreRiso', 'valoreGrano', 'valoreMais']))
-filtro = (pd.DataFrame(temp.join(colture))).reset_index()
-filtro['index']= filtro['index'].dt.strftime('%d-%m-%Y')
-
 df = df.reset_index()
-df['index'] = df['index'].dt.strftime('%d-%m-%Y')
+df['index']= df['index'].dt.strftime('%d-%m-%Y')
+
+temp = pd.DataFrame(df.filter(items=['index','valoreRiso', 'valoreGrano', 'valoreMais']))
+filtro = (pd.DataFrame(temp.join(colture))).reset_index()
+
+
+
 df_dict = df.to_dict('records')
+
+
 
