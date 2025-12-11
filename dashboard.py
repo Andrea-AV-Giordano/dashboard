@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from simulatore import *
+from grafici import *
 
 
 app = Dash(
@@ -24,8 +25,8 @@ TAB_PRODUZIONE = dbc.Container([
                            dcc.Graph(id="lineColture"),
                             ]),
                        dbc.Col([
-                    dcc.Graph(figure=px.bar(colture, y=['mais', 'riso', 'grano'], x=DATA))         
-                            ]),
+                    dcc.Graph(figure=barProduzione),
+                            ])
                         ])),
                 dbc.Checklist(id="checklist_colture", 
                               options=[
@@ -38,14 +39,14 @@ TAB_PRODUZIONE = dbc.Container([
                               style={'padding': 20, 'text-align':'center'})
             ])
         ]),
-           
-        ]),
+    ]),
     dbc.Row([
         dbc.Col([
              dbc.Card([
                  dbc.CardHeader('Scegliere la coltura desiderata'),
                  dbc.CardBody([
-                    dcc.Dropdown(id='dropdownProd', options=['mais', 'grano', 'riso'], value='mais'),
+                    dcc.Dropdown(id='dropdownProd', options=
+                                 ['Mais', 'Riso', 'Grano'], value='Mais'),
                     dash_table.DataTable(
                         id='tableColture',
                         data=filtro.to_dict('records'), 
@@ -57,37 +58,12 @@ TAB_PRODUZIONE = dbc.Container([
         dbc.Col([ 
                 dbc.Card([
                     dbc.CardHeader('Quantità totale prodotta'),
-                    dcc.Graph(figure=px.pie(sommaColture, names='Coltura', values='Valore')), 
+                    dcc.Graph(figure=pieProduzione), 
                         ])
                 ]),
     ])
     ])
 
-
-areaumidita = go.Figure()
-
-areaumidita.add_trace(
-    go.Scatter(
-        x=DATA,
-        y=clima['umidita'],
-        fill='tozeroy',
-        name="Stagione umida"
-    ))
-
-areaumidita.add_trace(
-    go.Scatter(
-        x=DATA,
-        y=clima['umidita_secca'],
-        fill='tozeroy',
-        name="Stagione secca"
-    )
-)
- 
-
-areaumidita.update_layout(
-    yaxis_title="Umidità (%)",
-    xaxis_title="Mese",
-)
 
 
 TAB_CLIMA = dbc.Container([
@@ -95,22 +71,21 @@ TAB_CLIMA = dbc.Container([
                 dbc.Col([
                 dbc.Card([
                     dbc.CardHeader("Precipitazioni medie mensili"),
-                    dbc.CardBody(dcc.Graph(id="precipitazioni", figure=px.bar(clima, y=['precipitazioni'], x=DATA)))
+                    dbc.CardBody(dcc.Graph(id="precipitazioni", figure=barPrecipitazioni))
                     ]),
             ]),
                 dbc.Col([
                 dbc.Card([
                     dbc.CardHeader("Temperatura media mensile"),
-                    dbc.CardBody(dcc.Graph(id="temperatura",figure=px.line(clima, y=['temperatura'], x=DATA, markers=True)))
+                    dbc.CardBody(dcc.Graph(figure=lineTemperatura))
                     ])
-            ])
-                                
+            ])                      
     ]),
     dbc.Row([
         dbc.Col([
             dbc.Card([
                     dbc.CardHeader("Umidità"),
-                    dbc.CardBody(dcc.Graph(id="umidità", figure=areaumidita))
+                    dbc.CardBody(dcc.Graph(figure=areaUmidita))
                     ])
             ])
         ]),     
@@ -133,8 +108,15 @@ TAB_CLIMA = dbc.Container([
                 gauge={
                 'threshold': {
                 'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 8000}})
+                'thickness': 1,
+                'value': 8000},
+                'bar': {'color':'black'},
+                'steps': [
+                    {'range': [0, 5000], 'color': "green"},
+                    {'range': [5000, 6500], 'color': "yellow"},
+                    {'range': [6500, 8000], 'color': "red"},
+        ],
+                })
                             ))
                     ])
                 ])                
@@ -152,52 +134,57 @@ TAB_CLIMA = dbc.Container([
 
 
 
-print(date_formattate)
 TAB_ECONOMIA = dbc.Container([
     dbc.Row([
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader("Ricavo mais"),
-                dcc.Graph(figure=px.line(df, x=DATA, y=['valoreMais']))
+                dcc.Graph(figure=lineRicavomais)
             ])
         ], width=4),
             dbc.Col([
             dbc.Card([
                 dbc.CardHeader("Ricavo riso"),
-                dcc.Graph(id='prova', figure=px.line(df, x=DATA, y=['valoreRiso']))
+                dcc.Graph(figure=lineRicavoriso)
             ])
         ], width=4),
             dbc.Col([
             dbc.Card([
                 dbc.CardHeader("Ricavo grano"),
-                dcc.Graph(id='prova', figure=px.line(df, x=DATA, y=['valoreGrano']))
+                dcc.Graph(figure=lineRicavograno)
             ])
         ]),
     ]),
     dbc.Row([
         dbc.Col([
             dbc.Card([
-                dbc.CardHeader('temp'),
+                dbc.CardHeader('Spese'),
                 dbc.CardBody([
                     dcc.Graph(id='barSpese'),
                     ]),
                 dbc.CardFooter([
-                    dbc.Checklist(id='checkSpese', options=['manodopera','pesticidi','fertilizzanti'], value=['manodopera'])
-                    ])
+                    dbc.Checklist(id='checkSpese', 
+                              options=[
+                              {'label':'Manodopera','value':'manodopera'},
+                              {'label':'Pesticidi','value':'pesticidi'},
+                              {'label':'Fertilizzanti','value':'fertilizzanti'}
+                              ], 
+                              value=['manodopera'],
+                              inline=True,
+                              style={'padding': 10, 'text-align':'center'})
+                   ])
             ])
         ]),
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader('Spesa totale'),
                 dbc.CardBody([
-                dcc.Graph(id='piePrezzi', figure=px.pie(sommaSpese, names='Spesa', values='Valore'))               
+                dcc.Graph(figure=pieCosto)               
                 ])
             ])
         ])
     ]),
-
     dbc.Row([
-
         dbc.Col([
                 dbc.Card([
                     dbc.CardHeader('Guadagno mensile'),
@@ -205,15 +192,14 @@ TAB_ECONOMIA = dbc.Container([
                         dcc.Graph(id='waterfallVendite'),
                         dcc.Slider(
                             id='slider',
-                            min=1,
+                            min=2,
                             max=12,
-                            value=1,
+                            value=2,
                             step=1,
                             marks={k: v for k, v in date_formattate.items()}),
                         ])
                     ])
             ])
-
         ]),
     dbc.Row([
         dbc.Col([ 
@@ -238,12 +224,10 @@ TAB_ECONOMIA = dbc.Container([
                                 "filter_query": "{{totale}} = {}".format(df['totale'].max()),
                                 'colunm_id': 'Totale'},
                                 "fontWeight": "bold", 
-                                "border": "1px solid #d1a85a"}]
-
-                        )])
+                                "border": "1px solid #d1a85a"}])
+                ])
         ])
     ])
-
 ])
 
 
@@ -254,8 +238,7 @@ app.layout = dbc.Container([
         children=[
             dbc.Tab(label="Produzione", tab_id="produzione"),
             dbc.Tab(label="Clima e Risorse Ambientali", tab_id="clima"),
-            dbc.Tab(label="Economa", tab_id="economia"),
-        ]
+            dbc.Tab(label="Economia", tab_id="economia")]
     ),
     html.Div(id="tab_content",
         style={
@@ -266,6 +249,7 @@ app.layout = dbc.Container([
         "padding": "10px"
     })
 ])
+
 
 @app.callback(
     Output("tab_content", "children"), 
@@ -289,16 +273,16 @@ def aggiorna(selezione):
     coltura= None
     valore = None
 
-    if selezione == 'mais':
-        coltura=selezione
+    if selezione == 'Mais':
+        coltura='mais'
         valore='valoreMais'
-    elif selezione == 'riso':
-        coltura=selezione
+    elif selezione == 'Riso':
+        coltura='riso'
         valore='valoreRiso'
-    elif selezione == 'grano':
-        coltura=selezione
+    elif selezione == 'Grano':
+        coltura='grano'
         valore='valoreGrano'
-
+        coltura='grano'
 
     colonne=[
         {'name':'Data', 'id':'index'},
@@ -307,7 +291,7 @@ def aggiorna(selezione):
 
 
     return colonne
- 
+
 
 @app.callback(
     Output("lineColture", "figure"),
@@ -315,6 +299,17 @@ def aggiorna(selezione):
 )
 def aggiorna(selezione):
     fig = px.line(colture, y=selezione, x=DATA)
+
+    fig.update_traces(
+    hovertemplate="%{y:.1f}t<br>%{x}",
+    name="Tonnelate"
+    )
+
+    fig.update_layout(
+    yaxis_title="Tonnellate",
+    xaxis_title="Mese"
+    )
+
     return fig
 
 
@@ -324,6 +319,18 @@ def aggiorna(selezione):
 )
 def aggiorna(selezione):
     fig = px.line(spese, y=selezione, x=DATA, markers=True)
+
+    fig.update_traces(
+    hovertemplate="%{y:.1f} €<br>%{x}",
+    name="Euro (€)"
+    )
+
+    fig.update_layout(
+    yaxis_title="Spese (€)",
+    xaxis_title="Mese"
+    )
+
+
     return fig
 
 
@@ -337,8 +344,20 @@ def aggiorna(selezione):
         soglia = np.full(12,8000)
         y.append(soglia)
 
-    fig = px.line(risorse_amb, y=y, x=DATA, markers=True)
+    fig = px.line(risorse_amb, y=y, x=DATA)
+
+    fig.update_traces(
+    hovertemplate="%{y:.1f} Kg<br>%{x}",
+    name="Tonnelate"
+    )
+
+    fig.update_layout(
+    yaxis_title="Emissioni (Kg)",
+    xaxis_title="Mese"
+    )
+
     return fig 
+
 
 @app.callback(
         Output('waterfallVendite','figure'),
@@ -346,7 +365,10 @@ def aggiorna(selezione):
         )
 def calcolodelta(mese):
     mese = date_formattate[mese]
-    waterfallDf = temp
+    waterfallDf = ricavoColture.reset_index()
+
+
+    waterfallDf['index'] = waterfallDf['index'].dt.strftime('%d-%m-%Y')
     mesi = list(waterfallDf['index'])    
 
     idx=mesi.index(mese)
@@ -360,17 +382,17 @@ def calcolodelta(mese):
     delta = delta.to_frame(name="value")
 
 
-
     waterfall = go.Figure(go.Waterfall(
     orientation='v',
     x=delta.index,
     y=delta['value'],
     ))
 
-    
-    print(delta)
+        
 
     return waterfall
+
+
 
 
 if __name__ == "__main__":

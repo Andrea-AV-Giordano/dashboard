@@ -60,35 +60,37 @@ sommaSpese = pd.DataFrame({
     
 })
 sommaColture = pd.DataFrame({
-    'Coltura': ['Riso', 'Grano', 'Mais', ],
+    'Coltura': ['Riso', 'Grano', 'Mais'],
         'Valore': [
             colture['riso'].sum(),
             colture['grano'].sum(),
             colture['mais'].sum()],
 })
 
+ricavoColture = pd.DataFrame({
 
-df = spese.join(colture)
+    'valoreGrano' : np.multiply(colture['grano'], PREZZO_GRANO).round(2),
+    'valoreRiso' : np.multiply(colture['riso'], PREZZO_RISO).round(2),
+    'valoreMais' : np.multiply(colture['mais'], PREZZO_MAIS).round(2)
+    },
+            index=DATA)
+
+
+df = spese.join(ricavoColture)
 
 date_formattate = {i+1: d.strftime("%d-%m-%Y") for i, d in enumerate(DATA)}
 
-
 clima['umidita_secca'] = clima['umidita'].where(clima["umidita"] < soglia)
 
-
-
-
-df['valoreGrano'] = np.multiply(colture['grano'], PREZZO_GRANO).round(2)
-df['valoreRiso']= np.multiply(colture['riso'], PREZZO_RISO).round(2)
-df['valoreMais']= np.multiply(colture['mais'], PREZZO_MAIS).round(2)
 df['totale'] =  ((df['valoreGrano'] + df['valoreMais'] + df['valoreRiso']) - (df['fertilizzanti'] + df['pesticidi'] + df['manodopera'])).round(2) 
+
+filtro = pd.DataFrame(df.filter(items=['valoreRiso', 'valoreGrano', 'valoreMais']))
+
+filtro = (pd.DataFrame(filtro.join(colture))).reset_index()
 
 df = df.reset_index()
 df['index']= df['index'].dt.strftime('%d-%m-%Y')
-
-temp = pd.DataFrame(df.filter(items=['index','valoreRiso', 'valoreGrano', 'valoreMais']))
-filtro = (pd.DataFrame(temp.join(colture))).reset_index()
-
+filtro['index'] = df['index']
 
 
 df_dict = df.to_dict('records')
