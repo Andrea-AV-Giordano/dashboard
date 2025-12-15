@@ -8,7 +8,6 @@ import plotly.graph_objects as go
 from simulatore import *
 from grafici import *
 
-
 app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP,'./assets/custom.css']
 )
@@ -49,7 +48,7 @@ TAB_PRODUZIONE = dbc.Container([
                                  ['Mais', 'Riso', 'Grano'], value='Mais'),
                     dash_table.DataTable(
                         id='tableColture',
-                        data=filtro.to_dict('records'), 
+                        data=filtroTabella.to_dict('records'), 
                         columns=[],
                         sort_action='native')
                      ])
@@ -71,7 +70,7 @@ TAB_CLIMA = dbc.Container([
                 dbc.Col([
                 dbc.Card([
                     dbc.CardHeader("Precipitazioni medie mensili"),
-                    dbc.CardBody(dcc.Graph(id="precipitazioni", figure=barPrecipitazioni))
+                    dbc.CardBody(dcc.Graph(figure=barPrecipitazioni))
                     ]),
             ]),
                 dbc.Col([
@@ -205,7 +204,7 @@ TAB_ECONOMIA = dbc.Container([
         dbc.Col([ 
                  dbc.Card([
                   dash_table.DataTable(
-                          data=df_dict,
+                          data=ricavoTabella.to_dict('records'),
                           columns=[
                             {"name": "Data", "id": 'index' },
                             {"name": "Costo Pesticidi", "id": "pesticidi"},
@@ -221,7 +220,7 @@ TAB_ECONOMIA = dbc.Container([
                         "backgroundColor": "#f8f8f8"},
                         {
                             'if':{
-                                "filter_query": "{{totale}} = {}".format(df['totale'].max()),
+                                "filter_query": "{{totale}} = {}".format(ricavoTabella['totale'].max()),
                                 'colunm_id': 'Totale'},
                                 "fontWeight": "bold", 
                                 "border": "1px solid #d1a85a"}])
@@ -251,16 +250,18 @@ app.layout = dbc.Container([
 ])
 
 
+
+
 @app.callback(
     Output("tab_content", "children"), 
     Input("tabs", "active_tab"),
 )
-def cambia(at):
-    if   at == 'produzione':
+def cambia(pagina):
+    if  pagina == 'produzione':
         return TAB_PRODUZIONE
-    elif at == 'clima':
+    elif pagina == 'clima':
         return TAB_CLIMA
-    elif at == 'economia':
+    elif pagina == 'economia':
         return TAB_ECONOMIA
 
 
@@ -372,7 +373,6 @@ def calcolodelta(mese):
     mesi = list(waterfallDf['index'])    
 
     idx=mesi.index(mese)
-
     df_prev = (waterfallDf[waterfallDf['index'] == mesi[idx-1]]).set_index('index')
     df_curr = (waterfallDf[waterfallDf['index'] == mesi[idx]]).set_index('index')
     riga_corr = df_curr.loc[mesi[idx]]
@@ -391,7 +391,6 @@ def calcolodelta(mese):
         
 
     return waterfall
-
 
 
 

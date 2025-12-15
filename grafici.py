@@ -2,7 +2,6 @@ from simulatore import *
 import plotly.express as px
 import plotly.graph_objects as go
 
-#linecolture
 
 barProduzione = px.bar(colture, y=['mais', 'riso', 'grano'], x=DATA)
 
@@ -62,6 +61,7 @@ lineTemperatura.update_traces(
 )
 
 
+
 areaUmidita = go.Figure()
 
 areaUmidita.add_trace(
@@ -87,11 +87,9 @@ areaUmidita.update_layout(
 )
 
 
-#lineEmissioni
-#gaugeEmissioni
 
 
-lineRicavomais =px.line(df, x=DATA, y=['valoreMais'])
+lineRicavomais = px.line(ricavoColture, x=DATA, y=['valoreMais'])
 
 lineRicavomais.update_layout(
     yaxis_title="Guadagno (€)",
@@ -104,7 +102,9 @@ lineRicavomais.update_traces(
 )
 
 
-lineRicavoriso = px.line(df, x=DATA, y=['valoreRiso'])
+
+
+lineRicavoriso = px.line(ricavoColture, x=DATA, y=['valoreRiso'])
 
 lineRicavoriso.update_layout(
     yaxis_title="Guadagno (€)",
@@ -117,7 +117,9 @@ lineRicavoriso.update_traces(
 )
 
 
-lineRicavograno = px.line(df, x=DATA, y=['valoreGrano']) 
+
+
+lineRicavograno = px.line(ricavoColture, x=DATA, y=['valoreGrano']) 
 
 lineRicavograno.update_layout(
     yaxis_title="Guadagno (€)",
@@ -128,12 +130,6 @@ lineRicavograno.update_layout(
 lineRicavograno.update_traces(
     hovertemplate="%{y:.1f}€<br>Mese: %{x}"
 )
-
-
-'''
-lineCosto
-'''
-
 
 pieCosto = px.pie(sommaSpese, names='Spesa', values='Valore') 
 

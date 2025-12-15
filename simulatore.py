@@ -11,16 +11,13 @@ PREZZO_RISO = np.random.uniform(350,380,1).round(0)
 PREZZO_MAIS = np.random.uniform(200,280,1).round(0)
 
 
-
 DATA = pd.date_range(start='1/1/2025', periods=12, freq='ME')
 
 
 risorse_amb = pd.DataFrame({
-        'energia': np.random.uniform(9500,15000, 12).round(1),
-        'emissioni': np.random.uniform(5000,7000, 12).round(1),
-},
+        'emissioni': np.random.uniform(5000,7000, 12).round(1)},
     index=DATA
-                           )
+)
 
 spese = pd.DataFrame({
     'manodopera': np.random.uniform(17000,20000, 12).round(1),
@@ -36,8 +33,7 @@ soglia = 35
 clima = pd.DataFrame({
  'temperatura':  temperatura,
  'precipitazioni': precipitazioni,
- 'umidita' : np.add((precipitazioni)*0.6,(temperatura)*0.4),
- },
+ 'umidita' : np.add((precipitazioni)*0.6,(temperatura)*0.4)},
     index=DATA
                      )
 
@@ -45,8 +41,7 @@ clima = pd.DataFrame({
 colture = pd.DataFrame({
     'mais': np.random.uniform(80,100, 12).round(1),
     'riso': np.random.uniform(30,50, 12).round(1),
-    'grano': np.random.uniform(40,60, 12).round(1),
- },
+    'grano': np.random.uniform(40,60, 12).round(1)},
     index=DATA
 )
 
@@ -68,32 +63,26 @@ sommaColture = pd.DataFrame({
 })
 
 ricavoColture = pd.DataFrame({
-
     'valoreGrano' : np.multiply(colture['grano'], PREZZO_GRANO).round(2),
     'valoreRiso' : np.multiply(colture['riso'], PREZZO_RISO).round(2),
-    'valoreMais' : np.multiply(colture['mais'], PREZZO_MAIS).round(2)
-    },
+    'valoreMais' : np.multiply(colture['mais'], PREZZO_MAIS).round(2)},
             index=DATA)
 
 
-df = spese.join(ricavoColture)
 
 date_formattate = {i+1: d.strftime("%d-%m-%Y") for i, d in enumerate(DATA)}
-
 clima['umidita_secca'] = clima['umidita'].where(clima["umidita"] < soglia)
 
-df['totale'] =  ((df['valoreGrano'] + df['valoreMais'] + df['valoreRiso']) - (df['fertilizzanti'] + df['pesticidi'] + df['manodopera'])).round(2) 
 
-filtro = pd.DataFrame(df.filter(items=['valoreRiso', 'valoreGrano', 'valoreMais']))
-
-filtro = (pd.DataFrame(filtro.join(colture))).reset_index()
-
-df = df.reset_index()
-df['index']= df['index'].dt.strftime('%d-%m-%Y')
-filtro['index'] = df['index']
+ricavoTabella = spese.join(ricavoColture)
+ricavoTabella['totale'] =  (
+        (ricavoTabella['valoreGrano'] + ricavoTabella['valoreMais'] + ricavoTabella['valoreRiso']) - 
+        (ricavoTabella['fertilizzanti'] + ricavoTabella['pesticidi'] + ricavoTabella['manodopera'])).round(2) 
 
 
-df_dict = df.to_dict('records')
+filtroTabella = (pd.DataFrame(ricavoColture.join(colture))).reset_index()
 
-
+ricavoTabella = ricavoTabella.reset_index()
+ricavoTabella['index']= ricavoTabella['index'].dt.strftime('%d-%m-%Y')
+filtroTabella['index'] = ricavoTabella['index']
 
