@@ -86,3 +86,6 @@ ricavoTabella = ricavoTabella.reset_index()
 ricavoTabella['index']= ricavoTabella['index'].dt.strftime('%d-%m-%Y')
 filtroTabella['index'] = ricavoTabella['index']
 
+spese.to_csv('file')
+
+print(risorse_amb,'\n', spese,'\n', colture,'\n' , clima)
