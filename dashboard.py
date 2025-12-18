@@ -388,11 +388,8 @@ def calcolodelta(mese):
     y=delta['value'],
     ))
 
-        
 
     return waterfall
-
-
 
 if __name__ == "__main__":
     app.run()
